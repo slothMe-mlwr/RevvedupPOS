@@ -6,7 +6,7 @@ include "../src/components/view/header.php";
 <main class="flex-1 flex flex-col">
 
   <header class="bg-red-900 text-white flex items-center space-x-3 px-6 py-6">
-    <h1 class="text-lg font-semibold">SERVICE</h1>
+    <h1 class="text-lg font-semibold">SERVICE TRANSACTION</h1>
   </header>
 
 

@@ -7,7 +7,7 @@ include "../src/components/view/header.php";
  <!-- Topbar -->
   <header class="bg-red-900 text-white px-6 py-6 flex items-center space-x-3">
     <!-- <span class="material-icons cursor-pointer">arrow_back</span> -->
-    <h1 class="text-lg font-semibold">TRANSACTION LIST</h1>
+    <h1 class="text-lg font-semibold">TRANSACTION HISTORY</h1>
   </header>
 
   

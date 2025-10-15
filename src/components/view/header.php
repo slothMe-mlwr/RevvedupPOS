@@ -113,12 +113,15 @@ $business = $db->get_business_details();
 </div>
 
   <!-- Bottom Items -->
-  <div class="space-y-6 mb-4">
-    <a href="logout" class="flex justify-center w-full p-2 rounded-lg hover:bg-gray-100 hover:scale-105 transition duration-200">
-      <img src="../static/images/logout.png" alt="Logout">
+  <div class="space-y-6 mb-4 text-center">
+    <a href="logout" class="flex flex-col items-center justify-center w-full p-2 rounded-lg hover:bg-gray-100 hover:scale-105 transition duration-200">
+      <img src="../static/images/logout.png" alt="Logout" class="w-8 h-8">
+      <span class="text-xs font-medium mt-1 text-gray-700">Logout</span>
     </a>
-    <a href="settings" class="flex justify-center w-full p-2 rounded-lg hover:bg-gray-200 hover:scale-105 transition duration-200 ">
-      <img src="../static/images/settings.png" alt="Settings">
+
+    <a href="settings" class="flex flex-col items-center justify-center w-full p-2 rounded-lg hover:bg-gray-200 hover:scale-105 transition duration-200">
+      <img src="../static/images/settings.png" alt="Settings" class="w-8 h-8">
+      <span class="text-xs font-medium mt-1 text-gray-700">Settings</span>
     </a>
   </div>
 </aside>
