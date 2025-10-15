@@ -73,40 +73,44 @@ $business = $db->get_business_details();
 
     </div>
 
-    <!-- Menu Items -->
-    <div class="flex flex-col space-y-2">
-      <!-- <a href="dashboard" class="flex justify-center w-full p-2 rounded-lg hover:bg-gray-200 hover:scale-105 transition duration-200" <?= $authorize ?>>
-        <img src="../static/images/menus.png" alt="dashboard">
-      </a> -->
-      <a href="sales" class="flex justify-center w-full p-2 rounded-lg hover:bg-gray-200 hover:scale-105 transition duration-200">
-        <img src="../static/images/transaction.png" alt="sales">
-      </a>
-      <a href="inventory" class="flex justify-center w-full p-2 rounded-lg hover:bg-gray-200 hover:scale-105 transition duration-200 ">
-        <img src="../static/images/inventory.png" alt="Inventory">
-      </a>
-      <a href="analytics" class="flex justify-center w-full p-2 rounded-lg hover:bg-gray-200 hover:scale-105 transition duration-200" <?= $authorize ?>>
-        <img src="../static/images/analytics.png" alt="Analytics">
-      </a>
-      <a href="employee" class="flex justify-center w-full p-2 rounded-lg hover:bg-gray-200 hover:scale-105 transition duration-200 ">
-        <img src="../static/images/team_management.png" alt="Employee">
-      </a>
+<!-- Menu Items -->
+<div class="flex flex-col space-y-2 text-center">
+  <a href="sales" class="flex flex-col items-center justify-center w-full p-2 rounded-lg hover:bg-gray-200 hover:scale-105 transition duration-200">
+    <img src="../static/images/transaction.png" alt="Sales" class="w-8 h-8">
+    <span class="text-xs font-medium mt-1 text-gray-700">Sales</span>
+  </a>
 
-       <a href="manage_user" class="flex justify-center w-full p-2 rounded-lg hover:bg-gray-200 hover:scale-105 transition duration-200 <?= $authorize ?>">
-        <img src="../static/images/employees.png" alt="Employee">
-      </a>
+  <a href="inventory" class="flex flex-col items-center justify-center w-full p-2 rounded-lg hover:bg-gray-200 hover:scale-105 transition duration-200">
+    <img src="../static/images/inventory.png" alt="Inventory" class="w-8 h-8">
+    <span class="text-xs font-medium mt-1 text-gray-700">Inventory</span>
+  </a>
 
-    <a href="booking_request" class="relative flex justify-center w-full p-2 rounded-lg hover:bg-gray-200 hover:scale-105 transition duration-200 ">
-    <img src="../static/images/email.png" alt="email">
+  <a href="analytics" class="flex flex-col items-center justify-center w-full p-2 rounded-lg hover:bg-gray-200 hover:scale-105 transition duration-200" <?= $authorize ?>>
+    <img src="../static/images/analytics.png" alt="Analytics" class="w-8 h-8">
+    <span class="text-xs font-medium mt-1 text-gray-700">Reports</span>
+  </a>
 
-        <span style="display:none;" class="PendingAppointmentCount absolute top-6 right-5 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-red-600 rounded-full transform translate-x-1/2 -translate-y-1/2">
-            0
-        </span>
-    </a>
+  <a href="employee" class="flex flex-col items-center justify-center w-full p-2 rounded-lg hover:bg-gray-200 hover:scale-105 transition duration-200">
+    <img src="../static/images/team_management.png" alt="Employee" class="w-8 h-8">
+    <span class="text-xs font-medium mt-1 text-gray-700">Employee Management</span>
+  </a>
 
+  <a href="manage_user" class="flex flex-col items-center justify-center w-full p-2 rounded-lg hover:bg-gray-200 hover:scale-105 transition duration-200" <?= $authorize ?>>
+    <img src="../static/images/employees.png" alt="Manage Users" class="w-8 h-8">
+    <span class="text-xs font-medium mt-1 text-gray-700">Employee List</span>
+  </a>
 
+  <a href="booking_request" class="relative flex flex-col items-center justify-center w-full p-2 rounded-lg hover:bg-gray-200 hover:scale-105 transition duration-200">
+    <img src="../static/images/email.png" alt="Bookings" class="w-8 h-8">
+    <span class="text-xs font-medium mt-1 text-gray-700">Bookings</span>
 
-    </div>
-  </div>
+    <span style="display:none;" class="PendingAppointmentCount absolute top-6 right-6 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-red-600 rounded-full">
+      0
+    </span>
+  </a>
+</div>
+
+</div>
 
   <!-- Bottom Items -->
   <div class="space-y-6 mb-4">

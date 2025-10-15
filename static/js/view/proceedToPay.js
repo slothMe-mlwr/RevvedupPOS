@@ -136,8 +136,8 @@ function updateComputation() {
     const subtotal = g_totalService + discountedItems; // already VAT inclusive
 
     // --- Compute VAT (Inclusive logic) ---
-    const vatableSales = subtotal / 1.12;
-    const vat = subtotal - vatableSales;
+    const vatableSales = g_totalItem / 1.12;
+    const vat = g_totalItem - vatableSales;
 
     // --- Final amounts ---
     const grandTotal = subtotal; // same as subtotal, kasi VAT inclusive

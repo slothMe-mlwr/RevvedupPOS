@@ -7,7 +7,7 @@ include "../src/components/view/header.php";
 
   <!-- Topbar -->
   <header class="bg-red-900 text-white flex items-center space-x-3 px-6 py-6">
-    <h1 class="text-lg font-semibold">PRODUCT INVENTORY</h1>
+    <h1 class="text-lg font-semibold">SCHEDULE A REPAIR</h1>
   </header>
 
 
