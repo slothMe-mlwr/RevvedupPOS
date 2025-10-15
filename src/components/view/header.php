@@ -61,6 +61,14 @@ $business = $db->get_business_details();
     <!-- Logo Top -->
     <div class="bg-black flex justify-center items-center py-4">
 
+   
+    <a href="dashboard" class="flex justify-center">
+        <img src="../static/images/login_logo.png" alt="Logo" class="h-11 w-auto object-contain">
+    </a>
+    
+
+    </div>
+
 <!-- Menu Items -->
 <div class="flex flex-col space-y-2 text-center">
   <a href="sales" class="flex flex-col items-center justify-center w-full p-2 rounded-lg hover:bg-gray-200 hover:scale-105 transition duration-200">
@@ -113,15 +121,6 @@ $business = $db->get_business_details();
     </a>
   </div>
 </aside>
-   
-    <a href="dashboard" class="flex justify-center">
-        <img src="../static/images/login_logo.png" alt="Logo" class="h-11 w-auto object-contain">
-    </a>
-    
-
-    </div>
-
-    
 
 
   <!-- Bottom Navigation (mobile only) -->
