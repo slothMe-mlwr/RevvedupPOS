@@ -1,7 +1,7 @@
 
 <?php
 
-
+//public html
 include ('config.php');
 
 date_default_timezone_set('Asia/Manila');
@@ -178,11 +178,13 @@ public function fetch_transaction_record($transactionId) {
     }
 }
 
+
+
 public function fetch_analytics($scope = "weekly") {
     $conn = $this->conn;
     $analytics = [];
 
-    $sql = "SELECT transaction_id, transaction_date, transaction_item
+    $sql = "SELECT transaction_id, transaction_date, transaction_item, transaction_service_sales
             FROM transaction
             WHERE transaction_status = 1
             ORDER BY transaction_date ASC";
@@ -206,7 +208,23 @@ public function fetch_analytics($scope = "weekly") {
         }
 
         $items = json_decode($row['transaction_item'], true);
-        if (!is_array($items) || empty($items)) continue; // skip empty
+//###########################################################################################################################
+        // Initialize label if not set
+        if (!isset($analytics[$label])) {
+            $analytics[$label] = [
+                "label" => $label,
+                "total_sales" => 0,
+                "capital_total" => 0,
+                "revenue" => 0,
+                "service_sales" => 0
+            ];
+        }
+
+        // Always count service sales, even if no items
+        $analytics[$label]['service_sales'] += (float)$row['transaction_service_sales'];
+
+        // Skip item processing if empty
+        if (!is_array($items) || empty($items)) continue;
 
         // Fetch returns
         $sqlReturns = "SELECT return_transaction_item, return_qty 
@@ -221,6 +239,7 @@ public function fetch_analytics($scope = "weekly") {
                 $refundMap[$retItem[0]['name']] = intval($ret['return_qty']);
             }
         }
+//###########################################################################################################################
 
         foreach ($items as $it) {
             $name = $it['name'];
@@ -237,17 +256,7 @@ public function fetch_analytics($scope = "weekly") {
             $capitalTotal = $capital * $qty;
             $revenue = $netSubtotal - $capitalTotal;
 
-            // Skip items with zero subtotal
             if ($netSubtotal <= 0) continue;
-
-            if (!isset($analytics[$label])) {
-                $analytics[$label] = [
-                    "label" => $label,
-                    "total_sales" => 0,
-                    "capital_total" => 0,
-                    "revenue" => 0
-                ];
-            }
 
             $analytics[$label]['total_sales'] += $netSubtotal;
             $analytics[$label]['capital_total'] += $capitalTotal;
@@ -257,33 +266,6 @@ public function fetch_analytics($scope = "weekly") {
 
     return array_values($analytics);
 }
-
-
-
-
-
-
-public function fetch_months_with_sales() {
-    $conn = $this->conn;
-    $sql = "SELECT DISTINCT YEAR(transaction_date) as year, MONTH(transaction_date) as month,
-                   DATE_FORMAT(transaction_date, '%M %Y') as label
-            FROM transaction
-            WHERE transaction_status = 1
-            ORDER BY transaction_date ASC";
-    $result = mysqli_query($conn, $sql);
-    $months = [];
-
-    if($result && mysqli_num_rows($result) > 0){
-        while($row = mysqli_fetch_assoc($result)){
-            $months[] = $row;
-        }
-    }
-
-    return $months;
-}
-
-
-
 
 
 
@@ -915,32 +897,6 @@ public function count_transactions($filter = "") {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 public function UpdateProduct(
     $productId,
     $itemName,
@@ -1051,6 +1007,7 @@ public function removeProduct($prod_id) {
 
 
 
+
     public function deleteCart($id,$table,$collumn) {
        
         $deleteQuery = "DELETE FROM `$table` WHERE $collumn  = ?";
@@ -1065,6 +1022,7 @@ public function removeProduct($prod_id) {
 
         return $result ? 'success' : 'Error updating menu';
     }
+
 
 
 
@@ -1171,22 +1129,25 @@ public function removeProduct($prod_id) {
     }
 
 
-
-
     public function fetch_total_cart($user_id)
     {
         $total = 0;
 
-        // Fetch service cart
+        // Fetch service cart (use original price, not 80%)
         $services = $this->fetch_all_service_cart($user_id);
         foreach ($services as $service) {
-            $total += floatval($service['service_price']);
+            // Use 'service_original_price' if available, otherwise fallback
+            $price = isset($service['service_original_price'])
+                ? floatval($service['service_original_price'])
+                : floatval($service['service_price']);
+
+            $total += $price;
         }
 
         // Fetch item cart
         $items = $this->fetch_all_item_cart($user_id);
         foreach ($items as $item) {
-            $total += floatval($item['prod_price']) * intval($item['item_qty']); 
+            $total += floatval($item['prod_price']) * intval($item['item_qty']);
         }
 
         return $total;
@@ -1286,31 +1247,64 @@ public function removeProduct($prod_id) {
 
 
 
-
-    
-public function CheckOutOrder($services, $items, $discount, $vat, $grandTotal, $payment, $change, &$errorMsg = null,$user_id) {
-    $services_json = json_encode($services);
-    $items_json = json_encode($items);
-
+    public function CheckOutOrder($services, $items, $discount, $vat, $grandTotal, $payment, $change, &$errorMsg = null, $user_id, $serviceSales = 0) {
     $this->conn->begin_transaction();
 
     try {
+        // 🔹 Compute shop (20%) and employee (80%) shares
+        $serviceSales = 0;     // 20% total for the shop
+        $serviceOriginal = 0;  // full original service total before deduction
+        $servicesEmployee = []; // new array for 80% version
+
+        foreach ($services as $s) {
+            if (isset($s['price'])) {
+                $fullPrice = floatval($s['price']);
+                $employeeShare = $fullPrice * 0.8;
+                $shopShare = $fullPrice * 0.2;
+
+                $serviceOriginal += $fullPrice;
+                $serviceSales += $shopShare;
+
+                // build employee version (80%)
+                $sEmployee = $s;
+                $sEmployee['price'] = $employeeShare;
+                $servicesEmployee[] = $sEmployee;
+            }
+        }
+
+        // Encode JSON data
+        $services_json_full = json_encode($services);          // full (100%)
+        $services_json_employee = json_encode($servicesEmployee); // 80% version
+        $items_json = json_encode($items);
+
         // 1️⃣ Insert transaction
         $sql = "INSERT INTO `transaction` 
-                (transaction_service, transaction_item, transaction_discount, transaction_vat, transaction_total, transaction_payment, transaction_change, transaction_status,transaction_by) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, 1,?)";
+        (transaction_service, transaction_service_employee, transaction_item, transaction_discount, transaction_vat, transaction_total, transaction_payment, transaction_change, transaction_service_sales, transaction_service_original, transaction_status, transaction_by) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?)";
+
         $stmt = $this->conn->prepare($sql);
-        if (!$stmt) throw new Exception("Prepare failed: " . $this->conn->error);
+        if (!$stmt) throw new Exception('Prepare failed: ' . $this->conn->error);
 
-        $stmt->bind_param("ssdddddi", $services_json, $items_json, $discount, $vat, $grandTotal, $payment, $change,$user_id);
-        if (!$stmt->execute()) throw new Exception("Execute failed: " . $stmt->error);
+        $stmt->bind_param(
+            "sssdddddddi", 
+            $services_json_full, 
+            $services_json_employee, 
+            $items_json, 
+            $discount, 
+            $vat, 
+            $grandTotal, 
+            $payment, 
+            $change, 
+            $serviceSales, 
+            $serviceOriginal, 
+            $user_id
+        );
 
-      // ✅ Get last inserted transaction_id
+        if (!$stmt->execute()) throw new Exception('Execute failed: ' . $stmt->error);
+
+        // ✅ Get last inserted transaction_id
         $transactionId = $this->conn->insert_id;
         $stmt->close();
-
-      
-
 
         // 2️⃣ Deduct stock
         foreach ($items as $item) {
@@ -1319,7 +1313,6 @@ public function CheckOutOrder($services, $items, $discount, $vat, $grandTotal, $
             $prod_id = (int)$item['prod_id'];
             $qty = (int)$item['qty'];
 
-            // Check stock
             $check = $this->conn->prepare("SELECT prod_qty FROM product WHERE prod_id = ? FOR UPDATE");
             $check->bind_param("i", $prod_id);
             $check->execute();
@@ -1334,7 +1327,6 @@ public function CheckOutOrder($services, $items, $discount, $vat, $grandTotal, $
                 throw new Exception("Insufficient stock for product ID {$prod_id}");
             }
 
-            // Update stock
             $update = $this->conn->prepare("UPDATE product SET prod_qty = prod_qty - ? WHERE prod_id = ?");
             $update->bind_param("ii", $qty, $prod_id);
             if (!$update->execute()) {
@@ -1357,24 +1349,19 @@ public function CheckOutOrder($services, $items, $discount, $vat, $grandTotal, $
             }
         }
 
-        // 4️⃣ Delete from item_cart based on user_id and prod_id
-            foreach ($items as $i) {
-                if (!isset($i['prod_id'])) continue;
+        // 4️⃣ Delete from item_cart
+        foreach ($items as $i) {
+            if (!isset($i['prod_id'])) continue;
+            $prod_id = (int)$i['prod_id'];
 
-                $prod_id = (int)$i['prod_id'];
-
-                $del = $this->conn->prepare(
-                    "DELETE FROM item_cart WHERE item_user_id = ? AND item_prod_id = ?"
-                );
-                $del->bind_param("ii", $user_id, $prod_id);
-                if (!$del->execute()) {
-                    $del->close();
-                    throw new Exception("Failed to delete item_cart for product ID {$prod_id}");
-                }
+            $del = $this->conn->prepare("DELETE FROM item_cart WHERE item_user_id = ? AND item_prod_id = ?");
+            $del->bind_param("ii", $user_id, $prod_id);
+            if (!$del->execute()) {
                 $del->close();
+                throw new Exception("Failed to delete item_cart for product ID {$prod_id}");
             }
-
-
+            $del->close();
+        }
 
         // 5️⃣ Commit transaction
         $this->conn->commit();
@@ -1387,10 +1374,13 @@ public function CheckOutOrder($services, $items, $discount, $vat, $grandTotal, $
     }
 }
 
+    
 
 
 
 
+
+//###########################################################################################################################
 
 
     // public function fetch_all_employee_record() {
@@ -1459,6 +1449,9 @@ public function CheckOutOrder($services, $items, $discount, $vat, $grandTotal, $
 
     //     return array_values($employees); // return as indexed array
     // }
+
+
+//###########################################################################################################################
 
   public function fetch_all_employee_record($filterMonth = null, $filterYear = null, $filterWeek = null) {
     $query = "SELECT transaction_id, transaction_date, transaction_service, transaction_item 
@@ -1566,7 +1559,6 @@ private function addEmployeeData(&$employees, &$empIds, $data, $dayOfWeek, $mont
         ];
     }
 }
-
 private function populateEmployeeNames(&$employees, $empIds) {
     $empIds = array_unique(array_filter($empIds));
     if (!empty($empIds)) {
@@ -1585,6 +1577,7 @@ private function populateEmployeeNames(&$employees, $empIds) {
         $stmtEmp->close();
     }
 }
+//###########################################################################################################################
 
 
 
@@ -1609,6 +1602,8 @@ private function populateEmployeeNames(&$employees, $empIds) {
 //         }
 //     }
 // }
+
+
 
 private function populateDeductions(&$employees) {
     foreach ($employees as $empId => &$empData) {
