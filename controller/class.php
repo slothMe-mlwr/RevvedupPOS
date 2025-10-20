@@ -2074,7 +2074,7 @@ while($row = $result->fetch_assoc()) {
 arsort($productCounts);
 
 // Take only top 10 products
-$productCounts = array_slice($productCounts, 0, 10, true);
+$productCounts = array_slice($productCounts, 0, 5, true);
 
 // Map product IDs to names
 $popularItems = [];
