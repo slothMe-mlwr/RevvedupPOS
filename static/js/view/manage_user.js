@@ -15,7 +15,7 @@ $(document).ready(function(){
 
     var firstname = $('#firstnameAdd').val().trim();
     var lastname = $('#lastnameAdd').val().trim();
-    var email = $('#emailAdd').val().trim();
+    //var email = $('#emailAdd').val().trim();
     var pin = $('#pinAdd').val().trim();
 
     // Validation
@@ -41,7 +41,7 @@ $(document).ready(function(){
     var formData = new FormData();
     formData.append('firstname', firstname);
     formData.append('lastname', lastname);
-    formData.append('email', email);
+    //formData.append('email', email);
     formData.append('pin', pin);
     formData.append('requestType', 'AddUser');
 
@@ -85,7 +85,6 @@ $(document).ready(function(){
               <tr>
                 <td class="px-4 py-2">${data.firstname || ''}</td>
                 <td class="px-4 py-2">${data.lastname || ''}</td>
-                <td class="px-4 py-2">${data.email || ''}</td>
                 <td class="px-4 py-2">${data.pin || ''}</td>
                 <td class="px-4 py-2">${statusText || ''}</td>
                 <td class="px-4 py-2 flex justify-center space-x-2">
@@ -96,7 +95,6 @@ $(document).ready(function(){
                   data-firstname="${data.firstname}" 
                   data-lastname="${data.lastname}" 
                   data-username="${data.username}" 
-                  data-email="${data.email}" 
                   data-pin="${data.pin || ''}">
                   <span class="material-icons text-base">edit</span>
                   Edit
@@ -131,7 +129,7 @@ $(document).ready(function(){
     $("#firstnameUpdate").val($(this).data("firstname"));
     $("#lastnameUpdate").val($(this).data("lastname"));
     $("#usernameUpdate").val($(this).data("username"));
-    $("#emailUpdate").val($(this).data("email"));
+    //$("#emailUpdate").val($(this).data("email"));
     $("#pinUpdate").val($(this).data("pin"));
     $('#updateUserModal').fadeIn();
   });

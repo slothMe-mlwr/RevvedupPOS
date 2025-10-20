@@ -68,7 +68,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $email     = trim($_POST['email']);
                 $pin       = $_POST['pin']; 
 
-                $result = $db->add_user($firstname, $lastname, $email, $pin);
+                $result = $db->add_user($firstname, $lastname, /*$email*/ $pin);
 
                 echo json_encode([
                     "status" => $result === "User added successfully" ? 200 : 500,
@@ -84,7 +84,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $userId    = $_POST['userId'];
                 $firstname = trim($_POST['firstname']);
                 $lastname  = trim($_POST['lastname']);
-                $email     = trim($_POST['email']);
+                //$email     = trim($_POST['email']);
                 $pin       = $_POST['pin'];
 
                 if (!$userId) {
@@ -92,7 +92,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     exit;
                 }
 
-                $result = $db->update_user($userId, $firstname, $lastname, $email, $pin);
+                $result = $db->update_user($userId, $firstname, $lastname, /*$email*/ $pin);
 
                 echo json_encode([
                     "status" => $result === "User updated successfully" ? 200 : 500,
