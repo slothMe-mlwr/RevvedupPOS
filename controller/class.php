@@ -1453,8 +1453,8 @@ public function removeProduct($prod_id) {
 
 //###########################################################################################################################
 
-  public function fetch_all_employee_record($filterMonth = null, $filterYear = null, $filterWeek = null) {
-    $query = "SELECT transaction_id, transaction_date, transaction_service, transaction_item 
+public function fetch_all_employee_record($filterMonth = null, $filterYear = null, $filterWeek = null) {
+    $query = "SELECT transaction_id, transaction_date, transaction_service_employee, transaction_service, transaction_item 
               FROM transaction 
               WHERE transaction_status = 1";
 
@@ -1504,15 +1504,16 @@ public function removeProduct($prod_id) {
         $yearNum    = (int)$date->format('Y');
         $weekOfYear = (int)$date->format('W');
 
-        // --- Services ---
-        $services = json_decode($row['transaction_service'], true);
+        // --- Prefer the 80% data; fallback to 100% if old record ---
+        $services = json_decode($row['transaction_service_employee'] ?: $row['transaction_service'], true);
+
         if (!empty($services)) {
             foreach ($services as $svc) {
                 $this->addEmployeeData($employees, $empIds, $svc, $dayOfWeek, $monthName, $yearNum, $weekOfYear);
             }
         }
 
-        // --- Items ---
+        // --- Items (still optional) ---
         // $items = json_decode($row['transaction_item'], true);
         // if (!empty($items)) {
         //     foreach ($items as $item) {
@@ -1530,6 +1531,7 @@ public function removeProduct($prod_id) {
 
     return array_values($employees);
 }
+
 
 private function addEmployeeData(&$employees, &$empIds, $data, $dayOfWeek, $monthName, $yearNum, $weekOfYear, $isItem=false) {
     $empId = isset($data['user_id']) ? (int)$data['user_id'] : 0;
